@@ -1,74 +1,172 @@
 <div align="center">
 
-  <img src="src/img/icon.png" alt="Discord Updater Logo" width="120" height="120">
+<img src="src/img/icon.png" alt="Discord Update Logo" width="120" height="120">
 
-  **Actualizador automático para la versión tar.gz de Discord en Linux.**
+# Discord Update
 
-  <br>
+**Actualizador automático de Discord (tar.gz) para Linux**
+
+Una herramienta diseñada para integrar y mantener Discord actualizado en el sistema de forma limpia, segura y sin fricción.
+
 </div>
+
+---
 
 ![Discord Update](src/img/logo.png)
 
 <div align="center">
 
-  ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)
-  ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
-  ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
+![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge\&logo=linux\&logoColor=black)
+![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge\&logo=python\&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
 </div>
 
-![Discord Update Linux Programa](src/img/546908112-03e3e6b8-8a8e-4122-a301-1760972d8473.png)
-
-### ¿Por qué existe esto?
-
-Si usas Linux (Fedora, Arch, Debian, etc.), conoces el dolor: sale una actualización de Discord, la aplicación se bloquea y te obliga a descargar un archivo `.tar.gz`. Los repositorios oficiales (`dnf`, `apt`, `pacman`) suelen tardar días en actualizarse, y la versión Flatpak ocupa mucho espacio.
-
-Instalar el `tar.gz` manualmente cada vez (extraer, mover a `/opt`, actualizar enlaces) es tedioso. **Esta herramienta detecta el archivo descargado y actualiza tu instalación del sistema con un solo clic.**
+![Discord Update Linux](src/img/546908112-03e3e6b8-8a8e-4122-a301-1760972d8473.png)
 
 ---
 
-### Requisitos
+## Contexto y motivación
 
-1. Tener **Discord** instalado (o querer instalarlo).
-2. Descargar la actualización oficial (`discord-x.x.x.tar.gz`) desde la web de Discord.
-3. **Importante:** Dejar el archivo en tu carpeta de **Descargas** (`~/Downloads` o `~/Descargas`).
+En la mayoría de las distribuciones Linux (Fedora, Arch, Debian, entre otras), Discord presenta un comportamiento recurrente: cuando existe una nueva versión, la aplicación se bloquea y obliga al usuario a descargar manualmente un archivo `tar.gz` desde el sitio oficial.
 
----
+Los repositorios del sistema (`dnf`, `apt`, `pacman`) suelen tardar en reflejar estas actualizaciones, y alternativas como Flatpak incrementan considerablemente el consumo de espacio y dependencias.
 
-### 🛠️ Cómo usarlo
+El proceso manual —extraer el archivo, moverlo a `/opt` o `/usr/share`, actualizar enlaces y permisos— resulta repetitivo y propenso a errores.
 
-1. **Descarga la actualización:** Cuando Discord te pida actualizar, baja el `.tar.gz` y déjalo en Descargas.
-2. **Ejecuta el Actualizador:** Abre `DiscordUpdater` (doble clic o desde terminal).
-3. **Verificación:**
-   - 🟢 **Verde:** Archivo detectado correctamente.
-   - 🔴 **Rojo:** No se encontró el `.tar.gz` en Descargas.
-4. **Instalar:** Presiona **"INSTALAR / ACTUALIZAR"**.
-5. **Autenticación:** El sistema te pedirá tu contraseña de usuario (usa `pkexec` para permisos seguros de root).
-
-> **Nota:** La instalación toma solo unos segundos. Al finalizar, recibirás una notificación de éxito.
+**Discord Update** nace para eliminar esa fricción: detecta automáticamente el archivo descargado y actualiza la instalación del sistema de manera controlada y transparente, en segundos.
 
 ---
 
-### ❓ FAQ
+## Características principales
 
-**¿Borrará mis datos o servidores?**
-No. La herramienta solo reemplaza los binarios del sistema en `/usr/share/discord` (o `/opt`). Tu configuración de usuario (`~/.config/discord`) se mantiene intacta.
+* Detección automática del archivo `discord-*.tar.gz` descargado
+* Instalación y actualización integrada al sistema
+* Uso de permisos elevados de forma segura mediante `pkexec`
+* Preservación total de la configuración y datos del usuario
+* Compatible con múltiples distribuciones Linux
+* Interfaz clara orientada a una sola acción: actualizar sin complicaciones
 
-**La AppImage no abre al hacer doble clic**
+---
+
+## Requisitos
+
+Antes de utilizar la herramienta, asegúrate de cumplir con lo siguiente:
+
+1. Tener Discord instalado o intención de instalarlo mediante el paquete oficial.
+2. Descargar la actualización desde la página oficial de Discord en formato `tar.gz`.
+3. Mantener el archivo descargado en la carpeta de **Descargas** del usuario:
+
+   * `~/Downloads`
+   * `~/Descargas`
+
+La aplicación utiliza esta ubicación para realizar la detección automática.
+
+---
+
+## Uso
+
+Discord Update está diseñado para funcionar sin configuración manual. El flujo es deliberadamente simple y automático, siguiendo el comportamiento real de Discord en Linux.
+
+### Flujo de funcionamiento
+
+1. **Descarga de la actualización oficial**
+   Cuando Discord indique que existe una nueva versión, descarga el archivo oficial en formato `tar.gz` desde el sitio web de Discord.
+
+2. **Ubicación del archivo**
+   Coloca el archivo descargado en la carpeta de Descargas del usuario:
+
+   * `~/Descargas`
+   * `~/Downloads`
+
+   La aplicación escanea automáticamente estas rutas y selecciona el archivo `discord-*.tar.gz` más reciente.
+
+3. **Ejecución de Discord Update**
+   Inicia la aplicación (AppImage o ejecutable). Al abrirse:
+
+   * Se analiza el sistema
+   * Se valida la existencia del archivo
+   * Se actualiza la interfaz según el estado detectado
+
+4. **Validación visual**
+
+   * Estado positivo: se muestra el nombre del archivo detectado y el botón queda habilitado.
+   * Estado negativo: se indica que no se encontró un archivo válido y no se permite continuar.
+
+5. **Instalación / actualización**
+   Al presionar **InstALAR / ACTUALIZAR**, la aplicación:
+
+   * Genera dinámicamente un script de instalación temporal
+   * Solicita permisos elevados mediante `pkexec`
+   * Extrae el contenido del `tar.gz`
+   * Reemplaza la instalación previa del sistema
+   * Actualiza accesos directos, enlaces simbólicos y base de datos del escritorio
+
+6. **Finalización**
+   El proceso toma solo unos segundos. Al completarse:
+
+   * Discord queda actualizado
+   * La aplicación confirma el éxito
+   * No es necesario reiniciar sesión ni el sistema
+
+Este flujo evita pasos manuales, reduce errores y mantiene una integración limpia con el sistema.
+
+---
+
+## Seguridad y datos del usuario
+
+La herramienta **no modifica ni elimina información personal**. Únicamente reemplaza los binarios de Discord ubicados en rutas del sistema como:
+
+* `/usr/share/discord`
+* `/opt/discord`
+
+Los datos del usuario permanecen intactos en:
+
+```text
+~/.config/discord
+```
+
+Servidores, sesiones, configuraciones y caché no se ven afectados.
+
+---
+
+## Solución de problemas
+
+### La AppImage no se ejecuta al hacer doble clic
+
 Asegúrate de que el archivo tenga permisos de ejecución:
+
 ```bash
 chmod +x DiscordUpdater-x86_64.AppImage
 ```
 
+Luego vuelve a ejecutarlo.
+
 ---
 
-### ⚙️ Nota para usuarios de Gear Lever
+## Nota para usuarios de Gear Lever
 
-Si utilizas **Gear Lever** para gestionar tus AppImages, es posible que recibas una advertencia indicando que el archivo es **"Inseguro"** o que **"Faltan metadatos"**.
+Si utilizas **Gear Lever** para gestionar AppImages, es posible que aparezca una advertencia indicando que el archivo es inseguro o que carece de metadatos.
 
-Esto es normal, ya que esta aplicación es una herramienta local y no incluye una firma digital corporativa. Para integrarla correctamente:
+Esto es un comportamiento esperado. Discord Update es una herramienta local y no incluye firma digital corporativa.
 
-1. Abre las **Preferencias** de Gear Lever.
-2. Busca la sección de seguridad o validación.
-3. Desactiva la opción de **"Verificar metadatos"** o activa **"Permitir AppImages sin firmar"**.
-4. Arrastra el archivo de nuevo y se integrará sin problemas.
+Para integrarla correctamente:
+
+1. Abre las preferencias de Gear Lever.
+2. Accede a la sección de seguridad o validación.
+3. Desactiva la verificación estricta de metadatos o habilita la opción para permitir AppImages sin firmar.
+4. Vuelve a arrastrar el archivo para completar la integración.
+
+---
+
+## Licencia
+
+Este proyecto se distribuye bajo la licencia **MIT**, permitiendo su uso, modificación y distribución libremente.
+
+---
+
+## Filosofía del proyecto
+
+Discord Update no pretende reinventar el sistema de paquetes ni imponer dependencias innecesarias. Su objetivo es simple: respetar el flujo natural de Discord en Linux y automatizar la parte más incómoda del proceso, manteniendo el control en manos del usuario.
+
+Si usas Linux a diario y prefieres soluciones limpias, directas y sin sobrecarga, esta herramienta fue creada para ti.
