@@ -1,18 +1,18 @@
 <div align="center">
-  <img src="icon.png" alt="Discord Updater Logo" width="120" height="120">
-  <img src="546908112-03e3e6b8-8a8e-4122-a301-1760972d8473.png" alt="Discord Updater programa" width="120" height="120">
-  
-  # DiscordUpdate-TarGZ
-  
+  <img src="src/img/icon.png" alt="Discord Updater Logo" width="120" height="120">
   **Actualizador automático para la versión tar.gz de Discord en Linux.**
   <br>
-  
+</div>
+
+![Discord Update](src/img/logo.png)
+
+<div align="center">
   ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)
   ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
   ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
 </div>
-
+![Discord Update Linux Programa](src/img/546908112-03e3e6b8-8a8e-4122-a301-1760972d8473.png)
 
 ### ¿Por qué existe esto?
 
