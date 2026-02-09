@@ -1,6 +1,338 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+<!-- Información Principal -->
+<title>Discord Update | Actualizador Automático para Linux - Sin Fricción</title>
+<meta name="description" content="Actualiza Discord en Linux automáticamente sin descomprimir archivos .tar.gz manualmente. Compatible con Fedora, Arch, Debian y Ubuntu. AppImage gratuito y open source.">
+<meta name="keywords" content="discord linux, actualizador discord, discord tar.gz, discord updater, appimage discord, actualizar discord linux, fedora discord, arch discord, debian discord, ubuntu discord, discord installer, herramienta linux, open source">
+<meta name="author" content="Retired64">
+<meta name="creator" content="Retired64">
+<meta name="publisher" content="Retired64">
+
+<!-- Canonical URL -->
+<link rel="canonical" href="https://impostormx.store/discord-updater/">
+
+<!-- Idioma y Región -->
+<meta name="language" content="Spanish">
+<meta http-equiv="content-language" content="es-LA">
+<meta name="geo.region" content="MX">
+<meta name="geo.placename" content="Latin America">
+<meta name="target" content="all">
+<meta name="audience" content="all">
+<meta name="coverage" content="Worldwide">
+<meta name="distribution" content="Global">
+
+<!-- Robots y Crawlers -->
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+<meta name="googlebot" content="index, follow">
+<meta name="bingbot" content="index, follow">
+<meta name="revisit-after" content="7 days">
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://impostormx.store/discord-updater/">
+<meta property="og:site_name" content="Discord Update">
+<meta property="og:title" content="Discord Update | Actualizador Automático para Linux">
+<meta property="og:description" content="Actualiza Discord en Linux automáticamente sin descomprimir archivos .tar.gz manualmente. Compatible con Fedora, Arch, Debian y Ubuntu. AppImage gratuito y open source.">
+<meta property="og:image" content="https://impostormx.store/discord-updater/opengraph.png">
+<meta property="og:image:secure_url" content="https://impostormx.store/discord-updater/opengraph.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Discord Update - Actualizador automático para Linux">
+<meta property="og:image:type" content="image/png">
+<meta property="og:locale" content="es_LA">
+<meta property="og:locale:alternate" content="es_MX">
+<meta property="og:locale:alternate" content="es_AR">
+<meta property="og:locale:alternate" content="es_CO">
+<meta property="og:locale:alternate" content="es_CL">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@_retired64">
+<meta name="twitter:creator" content="@_retired64">
+<meta name="twitter:title" content="Discord Update | Actualizador Automático para Linux">
+<meta name="twitter:description" content="Actualiza Discord en Linux automáticamente sin descomprimir archivos .tar.gz manualmente. AppImage gratuito y open source.">
+<meta name="twitter:image" content="https://impostormx.store/discord-updater/opengraph.png">
+<meta name="twitter:image:alt" content="Discord Update - Actualizador automático para Linux">
+<meta name="twitter:url" content="https://impostormx.store/discord-updater/">
+
+<!-- Favicons -->
+<link rel="icon" type="image/png" sizes="32x32" href="icono.png">
+<link rel="icon" type="image/png" sizes="16x16" href="icono.png">
+<link rel="shortcut icon" href="icono.png">
+
+<!-- Apple Touch Icons -->
+<link rel="apple-touch-icon" sizes="180x180" href="icono.png">
+<link rel="apple-touch-icon" sizes="152x152" href="icono.png">
+<link rel="apple-touch-icon" sizes="120x120" href="icono.png">
+<link rel="apple-touch-icon" sizes="76x76" href="icono.png">
+
+<!-- Apple Mobile Web App -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Discord Update">
+
+<!-- Microsoft Tiles -->
+<meta name="msapplication-TileColor" content="#5865F2">
+<meta name="msapplication-TileImage" content="icono.png">
+<meta name="msapplication-config" content="browserconfig.xml">
+
+<!-- Theme Color -->
+<meta name="theme-color" content="#5865F2">
+<meta name="msapplication-navbutton-color" content="#5865F2">
+
+<!-- Additional SEO -->
+<meta name="rating" content="General">
+<meta name="referrer" content="no-referrer-when-downgrade">
+<meta name="format-detection" content="telephone=no">
+<meta name="format-detection" content="address=no">
+
+<!-- Application Information -->
+<meta name="application-name" content="Discord Update">
+<meta name="mobile-web-app-capable" content="yes">
+
+<!-- Copyright -->
+<meta name="copyright" content="Retired64">
+<meta name="DC.rights" content="MIT License">
+
+<!-- Schema.org JSON-LD -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Discord Update",
+  "alternateName": "Discord Updater for Linux",
+  "description": "Actualizador automático de Discord para Linux. Actualiza Discord sin descomprimir archivos .tar.gz manualmente.",
+  "url": "https://impostormx.store/discord-updater/",
+  "image": "https://impostormx.store/discord-updater/opengraph.png",
+  "screenshot": "https://impostormx.store/discord-updater/opengraph.png",
+  "applicationCategory": "UtilitiesApplication",
+  "applicationSubCategory": "System Utility",
+  "operatingSystem": "Linux",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "author": {
+    "@type": "Person",
+    "name": "Retired64",
+    "url": "https://github.com/retired64"
+  },
+  "creator": {
+    "@type": "Person",
+    "name": "Retired64",
+    "url": "https://github.com/retired64"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Retired64",
+    "url": "https://github.com/retired64"
+  },
+  "softwareVersion": "4.0",
+  "license": "https://opensource.org/licenses/MIT",
+  "inLanguage": "es-LA",
+  "downloadUrl": "https://github.com/retired64/discord-updater/releases/download/v4.0/Discord_Updater-1.0-x86_64.AppImage",
+  "fileFormat": "application/vnd.appimage",
+  "installUrl": "https://github.com/retired64/discord-updater/releases",
+  "releaseNotes": "https://github.com/retired64/discord-updater/releases",
+  "softwareHelp": {
+    "@type": "WebPage",
+    "url": "https://github.com/retired64/discord-updater#readme"
+  },
+  "discussionUrl": "https://discord.com/invite/thuhUH2WNX",
+  "codeRepository": "https://github.com/retired64/discord-updater",
+  "programmingLanguage": "Python",
+  "runtimePlatform": "Linux",
+  "keywords": "discord, linux, updater, appimage, fedora, arch, debian, ubuntu, automatic, installer",
+  "featureList": [
+    "Auto-detección de actualizaciones",
+    "Instalación automática",
+    "Formato AppImage portable",
+    "Compatible con múltiples distribuciones",
+    "Preservación de datos del usuario",
+    "Código abierto"
+  ],
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "5",
+    "ratingCount": "1",
+    "bestRating": "5",
+    "worstRating": "1"
+  }
+}
+</script>
+
+<!-- Breadcrumb Schema -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Inicio",
+      "item": "https://impostormx.store/discord-updater/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Características",
+      "item": "https://impostormx.store/discord-updater/#features"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Instalación",
+      "item": "https://impostormx.store/discord-updater/#how-it-works"
+    },
+    {
+      "@type": "ListItem",
+      "position": 4,
+      "name": "FAQ",
+      "item": "https://impostormx.store/discord-updater/#faq"
+    }
+  ]
+}
+</script>
+
+<!-- Organization Schema -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Discord Update",
+  "url": "https://impostormx.store/discord-updater/",
+  "logo": "https://impostormx.store/discord-updater/icono.png",
+  "sameAs": [
+    "https://github.com/retired64/discord-updater",
+    "https://twitter.com/_retired64",
+    "https://youtube.com/@retired64",
+    "https://discord.com/invite/thuhUH2WNX"
+  ],
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "contactType": "Customer Support",
+    "url": "https://github.com/retired64/discord-updater/issues"
+  }
+}
+</script>
+
+<!-- FAQ Schema -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "¿El instalador modifica mis datos de Discord?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. El instalador solo reemplaza los binarios de Discord en rutas del sistema. Todos tus datos personales (servidores, configuración, mensajes, cache) permanecen intactos en ~/.config/discord."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "¿Cómo ejecuto la AppImage?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Asegúrate de que el archivo tenga permisos de ejecución con: chmod +x Discord_Updater-x86_64.AppImage. Luego puedes ejecutarlo con doble clic o desde terminal."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "¿Es compatible con mi distribución de Linux?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Discord Update es compatible con Fedora, Arch Linux, Debian, Ubuntu, openSUSE, Linux Mint y la mayoría de distribuciones estándar de Linux. No es compatible con sistemas inmutables como SteamOS o Fedora Silverblue."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "¿Dónde puedo encontrar los logs de error?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Si la instalación falla, el instalador genera un registro detallado en: ~/.discord_installer.log"
+      }
+    }
+  ]
+}
+</script>
+
+<!-- Article Schema (Blog Post Style) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "Discord Update - Actualizador Automático para Linux",
+  "description": "Actualiza Discord en Linux automáticamente sin descomprimir archivos .tar.gz manualmente. Herramienta open source para Fedora, Arch, Debian y Ubuntu.",
+  "image": "https://impostormx.store/discord-updater/opengraph.png",
+  "author": {
+    "@type": "Person",
+    "name": "Retired64"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Retired64",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://impostormx.store/discord-updater/icono.png"
+    }
+  },
+  "datePublished": "2026-02-09",
+  "dateModified": "2026-02-09",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://impostormx.store/discord-updater/"
+  },
+  "articleSection": "Software",
+  "keywords": "discord, linux, updater, appimage, open source",
+  "inLanguage": "es-LA"
+}
+</script>
+
+<!-- WebSite Schema -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Discord Update",
+  "url": "https://impostormx.store/discord-updater/",
+  "description": "Actualizador automático de Discord para Linux",
+  "inLanguage": "es-LA",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "https://github.com/retired64/discord-updater/search?q={search_term_string}",
+    "query-input": "required name=search_term_string"
+  }
+}
+</script>
+
+<!-- Preconnect para mejorar performance -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdnjs.cloudflare.com">
+<link rel="dns-prefetch" href="https://github.com">
+<link rel="dns-prefetch" href="https://discord.com">
+
+<!-- Sitemap -->
+<link rel="sitemap" type="application/xml" title="Sitemap" href="https://impostormx.store/discord-updater/sitemap.xml">
+
+<!-- RSS Feed (opcional) -->
+<!-- <link rel="alternate" type="application/rss+xml" title="Discord Update RSS" href="https://impostormx.store/discord-updater/feed.xml"> -->
+
+<!-- Alternate Languages (si decides añadir más idiomas en el futuro) -->
+<link rel="alternate" hreflang="es" href="https://impostormx.store/discord-updater/">
+<link rel="alternate" hreflang="es-MX" href="https://impostormx.store/discord-updater/">
+<link rel="alternate" hreflang="es-419" href="https://impostormx.store/discord-updater/">
+<link rel="alternate" hreflang="x-default" href="https://impostormx.store/discord-updater/">
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Discord Update - Actualizador automático de Discord para Linux. Mantén Discord actualizado sin fricción en Fedora, Arch, Debian y más.">

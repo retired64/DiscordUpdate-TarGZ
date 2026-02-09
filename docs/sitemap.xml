@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  
+  <!-- Página principal -->
+  <url>
+    <loc>https://impostormx.store/discord-updater/</loc>
+    <lastmod>2026-02-09</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="es" href="https://impostormx.store/discord-updater/"/>
+    <xhtml:link rel="alternate" hreflang="es-MX" href="https://impostormx.store/discord-updater/"/>
+    <xhtml:link rel="alternate" hreflang="es-419" href="https://impostormx.store/discord-updater/"/>
+    <image:image>
+      <image:loc>https://impostormx.store/discord-updater/opengraph.png</image:loc>
+      <image:title>Discord Update - Actualizador para Linux</image:title>
+      <image:caption>Actualiza Discord automáticamente en Linux</image:caption>
+    </image:image>
+  </url>
+
+  <!-- Sección de características -->
+  <url>
+    <loc>https://impostormx.store/discord-updater/#features</loc>
+    <lastmod>2026-02-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Sección de instalación -->
+  <url>
+    <loc>https://impostormx.store/discord-updater/#how-it-works</loc>
+    <lastmod>2026-02-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Sección de compatibilidad -->
+  <url>
+    <loc>https://impostormx.store/discord-updater/#compatibility</loc>
+    <lastmod>2026-02-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Sección de FAQ -->
+  <url>
+    <loc>https://impostormx.store/discord-updater/#faq</loc>
+    <lastmod>2026-02-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- GitHub Repository -->
+  <url>
+    <loc>https://github.com/retired64/discord-updater</loc>
+    <lastmod>2026-02-09</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- Releases/Downloads -->
+  <url>
+    <loc>https://github.com/retired64/discord-updater/releases</loc>
+    <lastmod>2026-02-09</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+</urlset>
