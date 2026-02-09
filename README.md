@@ -8,7 +8,7 @@ Discord Updater para Linux
 ### ¿Qué es esto?
 
 Es una pequeña herramienta que automatiza la instalación manual de Discord en Linux.
-Si usas Discord en Fedora o Arch, etc. sabes que cuando sale una actualización, la aplicación se bloquea y te pide descargar un archivo `.tar.gz`. Instalar ese archivo manualmente es tedioso. **Esta aplicación lo hace por ti con un solo clic.**
+Si usas Discord en Fedora o Arch, etc. sabes que cuando sale una actualización, la aplicación se bloquea cuando la descargaste y usas desde el sitio oficial descargado el tar.gz y esta desactualizado, no es como hacer un sudo dnf/apt install discord o upgrade discord. Te pide descargar un archivo `.tar.gz`. Instalar ese archivo manualmente es tedioso. **Esta aplicación lo hace por ti con un solo clic.**
 
 ---
 
