@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """
-Discord Installer Pro - Versión de Producción
+Discord Installer
 ==============================================
 Instalador gráfico profesional para Discord en sistemas Linux.
-Soporta instalación, actualización y gestión de versiones.
+Soporta instalación, actualización, detección automática de versiones
+y descarga directa desde servidores de Discord.
 
 Autor: Retired64
-Versión: 3.0.0
+Versión: 4.0.0
 Licencia: MIT
 """
 
@@ -18,15 +19,18 @@ import shlex
 import logging
 import tarfile
 import hashlib
+import re
+import requests
 from pathlib import Path
 from datetime import datetime
 from typing import Optional, Tuple
 
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
-    QLabel, QPushButton, QMessageBox, QProgressBar, QTextEdit
+    QLabel, QPushButton, QMessageBox, QProgressBar, QTextEdit,
+    QRadioButton, QButtonGroup
 )
-from PySide6.QtCore import Qt, QProcess, Signal, QObject, QTimer
+from PySide6.QtCore import Qt, QProcess, Signal, QObject, QTimer, QThread
 from PySide6.QtGui import QFont, QPixmap, QPainter, QColor
 
 
@@ -36,12 +40,15 @@ from PySide6.QtGui import QFont, QPixmap, QPainter, QColor
 
 class Config:
     """Configuración centralizada de la aplicación"""
-    APP_VERSION = "3.0.0"
+    APP_VERSION = "4.0.0"
     APP_NAME = "Discord Installer"
     INSTALL_DIR = "/opt/discord"
     DESKTOP_FILE_DIR = "/usr/share/applications"
     BIN_SYMLINK = "/usr/local/bin/discord"
     LOG_FILE = Path.home() / ".discord_installer.log"
+    
+    # URLs de Discord
+    DISCORD_DOWNLOAD_URL = "https://discord.com/api/download?platform=linux&format=tar.gz"
     
     # Rutas alternativas de instalación (fallback)
     ALT_INSTALL_DIR = "/usr/share/discord"
@@ -51,6 +58,7 @@ class Config:
     
     # Timeouts
     PROCESS_TIMEOUT = 300000  # 5 minutos en ms
+    DOWNLOAD_TIMEOUT = 600  # 10 minutos para descarga
 
 
 # ============================================================================
@@ -70,6 +78,159 @@ def setup_logging():
     return logging.getLogger(__name__)
 
 logger = setup_logging()
+
+
+# ============================================================================
+# GESTIÓN DE DESCARGAS DE DISCORD
+# ============================================================================
+
+class DiscordDownloader(QThread):
+    """Thread para descargar Discord sin bloquear la UI"""
+    
+    # Señales
+    progress_updated = Signal(int, str)  # porcentaje, mensaje
+    download_completed = Signal(bool, str, str)  # success, filepath, error_msg
+    version_detected = Signal(str)  # versión detectada
+    
+    def __init__(self, download_dir: Path):
+        super().__init__()
+        self.download_dir = download_dir
+        self.should_cancel = False
+        
+    def cancel(self):
+        """Cancela la descarga en curso"""
+        self.should_cancel = True
+        logger.info("Descarga cancelada por el usuario")
+    
+    def get_latest_version_info(self) -> Optional[Tuple[str, str]]:
+        """
+        Detecta la última versión disponible de Discord
+        Returns: (url_real, versión) o None
+        """
+        try:
+            logger.info("Consultando última versión de Discord...")
+            self.progress_updated.emit(5, "Consultando servidores de Discord...")
+            
+            # Hacer petición HEAD para obtener la URL real sin descargar
+            response = requests.head(
+                Config.DISCORD_DOWNLOAD_URL,
+                allow_redirects=True,
+                timeout=10
+            )
+            
+            final_url = response.url
+            logger.info(f"URL final: {final_url}")
+            
+            # Extraer versión con regex: discord-(X.X.X).tar.gz
+            match = re.search(r'discord-([0-9.]+)\.tar\.gz', final_url)
+            
+            if match:
+                version = match.group(1)
+                logger.info(f"Versión detectada: {version}")
+                self.version_detected.emit(version)
+                return final_url, version
+            else:
+                logger.error("No se pudo extraer versión de la URL")
+                return None
+                
+        except Exception as e:
+            logger.error(f"Error detectando versión: {e}")
+            return None
+    
+    def download_discord(self, url: str, version: str) -> Optional[str]:
+        """
+        Descarga Discord desde la URL proporcionada
+        Returns: ruta del archivo descargado o None
+        """
+        try:
+            filename = f"discord-{version}.tar.gz"
+            filepath = self.download_dir / filename
+            
+            logger.info(f"Iniciando descarga de Discord {version}")
+            self.progress_updated.emit(10, f"Descargando Discord {version}...")
+            
+            # Descarga con streaming
+            with requests.get(url, stream=True, timeout=Config.DOWNLOAD_TIMEOUT) as r:
+                r.raise_for_status()
+                
+                total_size = int(r.headers.get('content-length', 0))
+                downloaded = 0
+                
+                with open(filepath, 'wb') as f:
+                    for chunk in r.iter_content(chunk_size=8192):
+                        if self.should_cancel:
+                            logger.info("Descarga cancelada")
+                            if filepath.exists():
+                                filepath.unlink()
+                            return None
+                        
+                        if chunk:
+                            downloaded += len(chunk)
+                            f.write(chunk)
+                            
+                            # Calcular progreso (10-90%)
+                            if total_size > 0:
+                                progress = 10 + int(80 * downloaded / total_size)
+                                mb_downloaded = downloaded / (1024 * 1024)
+                                mb_total = total_size / (1024 * 1024)
+                                
+                                msg = f"Descargando: {mb_downloaded:.1f}/{mb_total:.1f} MB"
+                                self.progress_updated.emit(progress, msg)
+            
+            logger.info(f"Descarga completada: {filepath}")
+            self.progress_updated.emit(95, "Verificando archivo...")
+            
+            # Verificar que el archivo se descargó correctamente
+            if filepath.exists() and filepath.stat().st_size > 0:
+                return str(filepath)
+            else:
+                logger.error("Archivo descargado está vacío o no existe")
+                return None
+                
+        except requests.RequestException as e:
+            logger.error(f"Error en descarga HTTP: {e}")
+            return None
+        except Exception as e:
+            logger.error(f"Error inesperado en descarga: {e}")
+            return None
+    
+    def run(self):
+        """Ejecuta el proceso de descarga en el thread"""
+        try:
+            # 1. Detectar última versión
+            version_info = self.get_latest_version_info()
+            
+            if not version_info:
+                self.download_completed.emit(
+                    False,
+                    "",
+                    "No se pudo detectar la última versión de Discord"
+                )
+                return
+            
+            url, version = version_info
+            
+            if self.should_cancel:
+                return
+            
+            # 2. Descargar
+            filepath = self.download_discord(url, version)
+            
+            if filepath and not self.should_cancel:
+                self.progress_updated.emit(100, "¡Descarga completada!")
+                self.download_completed.emit(True, filepath, "")
+            elif self.should_cancel:
+                self.download_completed.emit(False, "", "CANCELLED")
+            else:
+                self.download_completed.emit(
+                    False,
+                    "",
+                    "Error al descargar el archivo"
+                )
+                
+        except Exception as e:
+            logger.error(f"Error en thread de descarga: {e}", exc_info=True)
+            self.download_completed.emit(False, "", str(e))
 
 
 # ============================================================================
@@ -153,6 +314,15 @@ class SystemUtils:
             return available
         except Exception as e:
             logger.error(f"Error verificando pkexec: {e}")
+            return False
+    
+    @staticmethod
+    def check_internet_connection() -> bool:
+        """Verifica si hay conexión a Internet"""
+        try:
+            response = requests.head("https://discord.com", timeout=5)
+            return response.status_code == 200
+        except:
             return False
     
     @staticmethod
@@ -386,8 +556,6 @@ class DiscordInstaller(QObject):
         except Exception as e:
             logger.warning(f"No se pudo verificar espacio en disco: {e}")
         
-        # 3. Verificar permisos de escritura (esto lo hará pkexec)
-        
         return True, "Sistema compatible"
     
     def install(self, tar_path: str):
@@ -595,20 +763,23 @@ class DiscordInstallerUI(QMainWindow):
         super().__init__()
         
         self.installer = DiscordInstaller()
+        self.downloader = None
         self.tar_file = None
         self.tar_size = 0
         self.installed_version = None
+        self.latest_version = None
+        self.download_mode = "auto"  # "auto" o "manual"
         
         self._setup_ui()
         self._connect_signals()
         
-        # Iniciar búsqueda automática
+        # Iniciar escaneo automático
         QTimer.singleShot(800, self._initial_scan)
     
     def _setup_ui(self):
         """Configura la interfaz de usuario"""
         self.setWindowTitle(Config.APP_NAME)
-        self.setFixedSize(550, 700)
+        self.setFixedSize(550, 780)
         
         # Estilo global
         self.setStyleSheet("""
@@ -640,6 +811,25 @@ class DiscordInstallerUI(QMainWindow):
                 background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
                                             stop:0 #5865F2, stop:1 #7289DA);
                 border-radius: 6px;
+            }
+            QRadioButton {
+                color: #B9BBBE;
+                font-size: 12px;
+                spacing: 8px;
+            }
+            QRadioButton::indicator {
+                width: 18px;
+                height: 18px;
+            }
+            QRadioButton::indicator:unchecked {
+                border: 2px solid #40444B;
+                border-radius: 9px;
+                background-color: #2C2F33;
+            }
+            QRadioButton::indicator:checked {
+                border: 2px solid #5865F2;
+                border-radius: 9px;
+                background-color: #5865F2;
             }
         """)
         
@@ -673,6 +863,28 @@ class DiscordInstallerUI(QMainWindow):
         
         layout.addSpacing(10)
         
+        # Selector de modo
+        mode_label = QLabel("Modo de instalación:")
+        mode_label.setStyleSheet("color: #B9BBBE; font-size: 11px;")
+        layout.addWidget(mode_label)
+        
+        mode_layout = QHBoxLayout()
+        self.radio_auto = QRadioButton("Descarga automática")
+        self.radio_manual = QRadioButton("Archivo manual")
+        self.radio_auto.setChecked(True)
+        
+        self.button_group = QButtonGroup()
+        self.button_group.addButton(self.radio_auto)
+        self.button_group.addButton(self.radio_manual)
+        self.button_group.buttonClicked.connect(self._on_mode_changed)
+        
+        mode_layout.addWidget(self.radio_auto)
+        mode_layout.addWidget(self.radio_manual)
+        mode_layout.addStretch()
+        layout.addLayout(mode_layout)
+        
+        layout.addSpacing(5)
+        
         # Estado del sistema
         self.system_status = QLabel("🔍 Escaneando sistema...")
         self.system_status.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -702,6 +914,24 @@ class DiscordInstallerUI(QMainWindow):
         self.install_button.clicked.connect(self._on_install_clicked)
         layout.addWidget(self.install_button)
         
+        # Botón cancelar (oculto por defecto)
+        self.cancel_button = QPushButton("Cancelar Descarga")
+        self.cancel_button.setFixedHeight(40)
+        self.cancel_button.setStyleSheet("""
+            QPushButton {
+                background-color: #ED4245;
+                color: white;
+                border-radius: 8px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #C03537;
+            }
+        """)
+        self.cancel_button.clicked.connect(self._on_cancel_download)
+        self.cancel_button.setVisible(False)
+        layout.addWidget(self.cancel_button)
+        
         # Log de instalación (colapsable)
         log_label = QLabel("📋 Log de instalación:")
         log_label.setStyleSheet("color: #B9BBBE; font-size: 11px; margin-top: 10px;")
@@ -709,7 +939,7 @@ class DiscordInstallerUI(QMainWindow):
         
         self.log_view = QTextEdit()
         self.log_view.setReadOnly(True)
-        self.log_view.setFixedHeight(120)
+        self.log_view.setFixedHeight(100)
         self.log_view.setVisible(False)
         layout.addWidget(self.log_view)
         
@@ -748,9 +978,25 @@ class DiscordInstallerUI(QMainWindow):
         self.installer.installation_completed.connect(self._on_installation_completed)
         self.installer.log_message.connect(self._on_log_message)
     
+    def _on_mode_changed(self):
+        """Maneja el cambio de modo de instalación"""
+        if self.radio_auto.isChecked():
+            self.download_mode = "auto"
+            logger.info("Modo cambiado a: Descarga automática")
+        else:
+            self.download_mode = "manual"
+            logger.info("Modo cambiado a: Archivo manual")
+        
+        # Re-escanear con el nuevo modo
+        QTimer.singleShot(100, self._initial_scan)
+    
     def _initial_scan(self):
         """Escaneo inicial del sistema"""
         try:
+            # Resetear estado
+            self.tar_file = None
+            self.latest_version = None
+            
             # Verificar versión instalada
             self.installed_version = SystemUtils.get_installed_version()
             
@@ -761,72 +1007,210 @@ class DiscordInstallerUI(QMainWindow):
                 self.install_button.setText("SISTEMA NO COMPATIBLE")
                 return
             
-            # Buscar archivo
-            result = self.installer.find_discord_tar()
-            
-            if result:
-                self.tar_file, self.tar_size = result
-                filename = Path(self.tar_file).name
-                size_mb = self.tar_size / (1024 * 1024)
-                
-                if self.installed_version:
-                    action = "ACTUALIZAR"
-                    status = f"✅ Discord {self.installed_version} detectado"
-                else:
-                    action = "INSTALAR"
-                    status = "📦 Listo para instalar"
-                
-                self.system_status.setText(status)
-                self.system_status.setStyleSheet("color: #57F287; font-weight: bold;")
-                self.file_info.setText(f"{filename}\nTamaño: {size_mb:.1f} MB")
-                self.install_button.setText(f"{action} DISCORD")
-                self.install_button.setEnabled(True)
-                
-                logger.info(f"Instalación lista. Archivo: {filename}, Acción: {action}")
+            if self.download_mode == "auto":
+                self._scan_auto_mode()
             else:
-                self.system_status.setText("❌ Archivo no encontrado")
-                self.system_status.setStyleSheet("color: #ED4245; font-weight: bold;")
-                self.file_info.setText(
-                    "Descarga discord-*.tar.gz desde\n"
-                    "discord.com/download y colócalo en Descargas"
-                )
-                self.install_button.setText("ARCHIVO NO ENCONTRADO")
-                logger.warning("No se encontró archivo de instalación")
+                self._scan_manual_mode()
                 
         except Exception as e:
             logger.error(f"Error en escaneo inicial: {e}", exc_info=True)
             self._show_error("Error", f"Error al escanear el sistema:\n{e}")
     
-    def _on_install_clicked(self):
-        """Maneja el clic en el botón de instalación"""
-        if not self.tar_file:
+    def _scan_auto_mode(self):
+        """Escaneo en modo descarga automática"""
+        self.system_status.setText("🌐 Verificando conexión a Internet...")
+        
+        # Verificar conexión
+        if not SystemUtils.check_internet_connection():
+            self.system_status.setText("❌ Sin conexión a Internet")
+            self.system_status.setStyleSheet("color: #ED4245; font-weight: bold;")
+            self.file_info.setText("Conéctate a Internet para usar\nel modo de descarga automática")
+            self.install_button.setText("SIN INTERNET")
             return
         
-        # Confirmar con el usuario
-        action = "actualizar" if self.installed_version else "instalar"
-        msg = QMessageBox(self)
-        msg.setWindowTitle("Confirmar instalación")
-        msg.setText(f"¿Deseas {action} Discord?")
-        msg.setInformativeText(
-            f"Archivo: {Path(self.tar_file).name}\n"
-            f"Destino: {Config.INSTALL_DIR}\n\n"
-            "Se solicitarán privilegios de administrador."
-        )
-        msg.setIcon(QMessageBox.Icon.Question)
-        msg.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
-        msg.setDefaultButton(QMessageBox.StandardButton.Yes)
+        self.system_status.setText("✅ Listo para descargar")
+        self.system_status.setStyleSheet("color: #57F287; font-weight: bold;")
         
-        if msg.exec() == QMessageBox.StandardButton.Yes:
-            # Preparar UI para instalación
+        if self.installed_version:
+            self.file_info.setText(
+                f"Versión instalada: {self.installed_version}\n"
+                "Discord se descargará automáticamente"
+            )
+            action = "ACTUALIZAR"
+        else:
+            self.file_info.setText("Discord se descargará automáticamente")
+            action = "DESCARGAR E INSTALAR"
+        
+        self.install_button.setText(action)
+        self.install_button.setEnabled(True)
+    
+    def _scan_manual_mode(self):
+        """Escaneo en modo archivo manual"""
+        result = self.installer.find_discord_tar()
+        
+        if result:
+            self.tar_file, self.tar_size = result
+            filename = Path(self.tar_file).name
+            size_mb = self.tar_size / (1024 * 1024)
+            
+            if self.installed_version:
+                action = "ACTUALIZAR"
+                status = f"✅ Discord {self.installed_version} detectado"
+            else:
+                action = "INSTALAR"
+                status = "📦 Listo para instalar"
+            
+            self.system_status.setText(status)
+            self.system_status.setStyleSheet("color: #57F287; font-weight: bold;")
+            self.file_info.setText(f"{filename}\nTamaño: {size_mb:.1f} MB")
+            self.install_button.setText(f"{action} DISCORD")
+            self.install_button.setEnabled(True)
+            
+            logger.info(f"Instalación lista. Archivo: {filename}, Acción: {action}")
+        else:
+            self.system_status.setText("❌ Archivo no encontrado")
+            self.system_status.setStyleSheet("color: #ED4245; font-weight: bold;")
+            self.file_info.setText(
+                "Descarga discord-*.tar.gz desde\n"
+                "discord.com/download y colócalo en Descargas"
+            )
+            self.install_button.setText("ARCHIVO NO ENCONTRADO")
+            logger.warning("No se encontró archivo de instalación")
+    
+    def _start_download(self):
+        """Inicia la descarga automática de Discord"""
+        try:
             self.install_button.setEnabled(False)
+            self.cancel_button.setVisible(True)
             self.progress_bar.setValue(0)
             self.progress_bar.setVisible(True)
             self.log_view.setVisible(True)
             self.log_view.clear()
             
-            # Iniciar instalación
-            logger.info("Iniciando instalación por solicitud del usuario")
-            self.installer.install(self.tar_file)
+            # Crear downloader
+            download_dir = SystemUtils.get_download_dir()
+            self.downloader = DiscordDownloader(download_dir)
+            
+            # Conectar señales
+            self.downloader.progress_updated.connect(self._on_download_progress)
+            self.downloader.download_completed.connect(self._on_download_completed)
+            self.downloader.version_detected.connect(self._on_version_detected)
+            
+            # Iniciar descarga
+            logger.info("Iniciando descarga automática de Discord")
+            self.downloader.start()
+            
+        except Exception as e:
+            logger.error(f"Error iniciando descarga: {e}", exc_info=True)
+            self._show_error("Error", f"No se pudo iniciar la descarga:\n{e}")
+            self.install_button.setEnabled(True)
+            self.cancel_button.setVisible(False)
+    
+    def _on_download_progress(self, progress, message):
+        """Actualiza el progreso de descarga"""
+        self.progress_bar.setValue(progress)
+        self.system_status.setText(message)
+        self._on_log_message(message)
+    
+    def _on_version_detected(self, version):
+        """Callback cuando se detecta la versión disponible"""
+        self.latest_version = version
+        logger.info(f"Versión disponible: {version}")
+        self.file_info.setText(f"Descargando Discord v{version}...")
+    
+    def _on_download_completed(self, success, filepath, error_msg):
+        """Callback cuando termina la descarga"""
+        self.cancel_button.setVisible(False)
+        
+        if error_msg == "CANCELLED":
+            self.system_status.setText("Descarga cancelada")
+            self.system_status.setStyleSheet("color: #FAA61A;")
+            self.progress_bar.setVisible(False)
+            self.install_button.setText("DESCARGAR E INSTALAR")
+            self.install_button.setEnabled(True)
+            return
+        
+        if success and filepath:
+            self.tar_file = filepath
+            self._on_log_message(f"✅ Descarga completada: {Path(filepath).name}")
+            
+            # Continuar automáticamente con la instalación
+            QTimer.singleShot(500, lambda: self._proceed_with_installation(filepath))
+        else:
+            self._show_error("Error de descarga", error_msg)
+            self.progress_bar.setVisible(False)
+            self.install_button.setText("REINTENTAR DESCARGA")
+            self.install_button.setEnabled(True)
+    
+    def _on_cancel_download(self):
+        """Cancela la descarga en curso"""
+        if self.downloader:
+            self.downloader.cancel()
+            self.downloader.wait()
+            self._on_log_message("Cancelando descarga...")
+    
+    def _proceed_with_installation(self, filepath):
+        """Procede con la instalación después de la descarga"""
+        msg = QMessageBox(self)
+        msg.setWindowTitle("Descarga completada")
+        msg.setText("Discord se descargó correctamente")
+        msg.setInformativeText("¿Deseas instalarlo ahora?")
+        msg.setIcon(QMessageBox.Icon.Question)
+        msg.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        msg.setDefaultButton(QMessageBox.StandardButton.Yes)
+        
+        if msg.exec() == QMessageBox.StandardButton.Yes:
+            self._start_installation(filepath)
+        else:
+            self.system_status.setText("Listo para instalar cuando quieras")
+            self.install_button.setText("INSTALAR DISCORD")
+            self.install_button.setEnabled(True)
+            self.progress_bar.setVisible(False)
+    
+    def _on_install_clicked(self):
+        """Maneja el clic en el botón de instalación"""
+        if self.download_mode == "auto" and not self.tar_file:
+            # Iniciar descarga
+            self._start_download()
+        elif self.tar_file:
+            # Instalar archivo existente
+            self._confirm_installation()
+        else:
+            self._show_error("Error", "No hay archivo para instalar")
+    
+    def _confirm_installation(self):
+        """Confirma la instalación con el usuario"""
+        action = "actualizar" if self.installed_version else "instalar"
+        
+        msg = QMessageBox(self)
+        msg.setWindowTitle("Confirmar instalación")
+        msg.setText(f"¿Deseas {action} Discord?")
+        
+        info_text = f"Archivo: {Path(self.tar_file).name}\n"
+        info_text += f"Destino: {Config.INSTALL_DIR}\n\n"
+        info_text += "Se solicitarán privilegios de administrador."
+        
+        msg.setInformativeText(info_text)
+        msg.setIcon(QMessageBox.Icon.Question)
+        msg.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        msg.setDefaultButton(QMessageBox.StandardButton.Yes)
+        
+        if msg.exec() == QMessageBox.StandardButton.Yes:
+            self._start_installation(self.tar_file)
+    
+    def _start_installation(self, filepath):
+        """Inicia el proceso de instalación"""
+        # Preparar UI para instalación
+        self.install_button.setEnabled(False)
+        self.progress_bar.setValue(0)
+        self.progress_bar.setVisible(True)
+        self.log_view.setVisible(True)
+        if not self.log_view.toPlainText():  # Solo limpiar si está vacío
+            self.log_view.clear()
+        
+        # Iniciar instalación
+        logger.info("Iniciando instalación por solicitud del usuario")
+        self.installer.install(filepath)
     
     def _on_progress_updated(self, value, message):
         """Actualiza la barra de progreso"""
@@ -884,9 +1268,16 @@ class DiscordInstallerUI(QMainWindow):
         <h2>Discord Installer Pro v{Config.APP_VERSION}</h2>
         <p><b>Instalador profesional para Discord en Linux</b></p>
         
+        <h3>🆕 Nuevo en v4.0:</h3>
+        <ul>
+            <li><b>Descarga automática</b> desde servidores de Discord</li>
+            <li>Detección de última versión disponible</li>
+            <li>Dos modos: Automático y Manual</li>
+        </ul>
+        
         <h3>Características:</h3>
         <ul>
-            <li>Instalación automática desde archivo tar.gz</li>
+            <li>Instalación automática con un clic</li>
             <li>Actualización de versiones existentes</li>
             <li>Creación de accesos directos</li>
             <li>Validación de archivos</li>
@@ -895,7 +1286,7 @@ class DiscordInstallerUI(QMainWindow):
         
         <h3>Requisitos:</h3>
         <ul>
-            <li>Archivo discord-*.tar.gz en Descargas</li>
+            <li>Conexión a Internet (modo automático)</li>
             <li>PolicyKit (pkexec) instalado</li>
             <li>500 MB de espacio libre</li>
         </ul>

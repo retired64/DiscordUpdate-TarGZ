@@ -143,6 +143,32 @@ chmod +x DiscordUpdater-x86_64.AppImage
 Luego vuelve a ejecutarlo.
 
 ---
+### ⚠️ Aviso para usuarios de Window Managers (i3, Sway, BSPWM)
+Este instalador utiliza `pkexec` para solicitar permisos de administrador de forma gráfica. Si utilizas un gestor de ventanas minimalista, **es obligatorio tener un agente de autenticación Polkit ejecutándose en segundo plano** (ej. `polkit-gnome`, `lxpolkit` o `mate-polkit`).
+
+Si el instalador se queda "Cargando..." indefinidamente al intentar instalar, verifique que su agente de autenticación esté activo, ya que la ventana para introducir la contraseña no se está mostrando.
+
+### 🚫 Incompatibilidad con Sistemas Inmutables
+Este instalador requiere acceso de escritura a los directorios del sistema `/opt` y `/usr/local/bin`. Por lo tanto, **no es compatible** con distribuciones de sistema de archivos inmutable o de solo lectura, tales como:
+* **SteamOS** (Steam Deck)
+* **Fedora Silverblue / Kinoite**
+* **openSUSE MicroOS**
+* **NixOS**
+
+Para estos sistemas, se recomienda utilizar la versión Flatpak de Discord o instalarlo dentro de un contenedor (Distrobox/Toolbox).
+
+### 📋 Dependencias del Sistema
+El script está diseñado para funcionar en la mayoría de distribuciones estándar (Ubuntu, Debian, Arch Linux, Fedora Workstation), pero requiere que las siguientes herramientas estén instaladas:
+* `python3` con `PySide6` y `requests`.
+* `pkexec` (PolicyKit) para la elevación de privilegios.
+* `tar` para la descompresión de archivos.
+* `update-desktop-database` (paquete `desktop-file-utils`) para actualizar los iconos del menú.
+
+### 🛠️ Solución de Problemas
+Si la instalación falla o se cierra inesperadamente, el instalador genera un registro detallado de errores. Puede consultar este archivo para obtener más información o adjuntarlo al reportar un problema:
+
+**Ruta del log:** `~/.discord_installer.log`
+
 
 ## Nota para usuarios de Gear Lever
 
